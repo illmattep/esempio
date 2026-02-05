@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Accesso servizio{% endblock %}
+{% block content %}
+  <section class="panel">
+    <h1>Accesso protetto</h1>
+    <p>Inserisci la password per accedere al servizio.</p>
+    <form method="post" class="form">
+      <input type="hidden" name="next" value="{{ next_url }}" />
+      <label>
+        Password
+        <input type="password" name="password" required />
+      </label>
+      <button type="submit">Sblocca</button>
+    </form>
+  </section>
+{% endblock %}

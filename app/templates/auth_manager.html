@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Credenziali{% endblock %}
+{% block content %}
+<div class="grid" style="grid-template-columns: 1fr 300px;">
+    <section class="panel">
+        <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>Credenziali</h1>
+            <button class="icon-btn" onclick="document.getElementById('settings-modal').showModal()">
+                <span class="material-symbols-rounded">settings</span>
+            </button>
+        </div>
+        {% if credentials %}
+        <div class="creds-list">
+            {% for cred in credentials %}
+            <div class="cred-card">
+                <div class="cred-header">
+                    <div class="cred-service">{{ cred.service_name }}</div>
+                    <div class="cred-category">{{ cred.category }}</div>
+                </div>
+                <div class="cred-body">
+                    <div class="field">
+                        <label>Utente</label>
+                        <div class="value">{{ cred.username }}</div>
+                    </div>
+                    <div class="field">
+                        <label>Password</label>
+                        <div class="value password-reveal" onclick="this.classList.toggle('revealed')">
+                            <span class="dots">••••••••</span>
+                            <span class="text">{{ cred.password }}</span>
+                        </div>
+                    </div>
+                    {% if cred.notes %}
+                    <div class="field full">
+                        <label>Note</label>
+                        <div class="value small">{{ cred.notes }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="cred-actions">
+                     <span class="date-badge" title="Data aggiornamento">
+                        <span class="material-symbols-rounded icon-tiny">schedule</span>
+                        {{ cred.updated_at or 'N/A' }}
+                     </span>
+                     <form action="{{ url_for('auth_delete', id=cred.id) }}" method="post">
+                        <button type="submit" class="btn-text danger" onclick="return confirm('Eliminare?')">Elimina</button>
+                     </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">Nessuna credenziale salvata.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <h2>Nuova Credenziale</h2>
+        <form action="{{ url_for('auth_add') }}" method="post" class="stack-form">
+            <div class="form-group">
+                <label>Servizio</label>
+                <input type="text" name="service" required placeholder="Es. Netflix, GitHub">
+            </div>
+            <div class="form-group">
+                <label>Categoria</label>
+                <input type="text" name="category" placeholder="Es. Social, Lavoro">
+            </div>
+            <div class="form-group">
+                <label>Username / Email</label>
+                <input type="text" name="username">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password">
+            </div>
+            <div class="form-group">
+                <label>Note</label>
+                <textarea name="notes" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn primary">Salva</button>
+        </form>
+    </section>
+</div>
+
+<!-- Settings Modal -->
+<dialog id="settings-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Impostazioni Auth</h3>
+            <button class="icon-btn" onclick="document.getElementById('settings-modal').close()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <form action="{{ url_for('service_settings', service='auth') }}" method="post">
+            <div class="setting-row">
+                <label>Richiedi Password (Admin)</label>
+                <label class="switch">
+                    <input type="checkbox" name="require_password" {% if settings.require_password %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<style>
+    .creds-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+    .cred-card { background: var(--card_bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .cred-header { display: flex; justify-content: space-between; align-items: start; }
+    .cred-service { font-weight: 600; color: var(--accent); }
+    .cred-category { font-size: 10px; padding: 2px 6px; background: var(--bg); border-radius: 4px; color: var(--muted); text-transform: uppercase; }
+    .cred-body { display: grid; gap: 8px; font-size: 13px; }
+    .field label { color: var(--muted); font-size: 11px; display: block; }
+    .password-reveal { cursor: pointer; user-select: none; }
+    .password-reveal .text { display: none; font-family: monospace; }
+    .password-reveal.revealed .dots { display: none; }
+    .password-reveal.revealed .text { display: block; }
+    .stack-form { display: flex; flex-direction: column; gap: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group input, .form-group textarea { background: var(--input_bg); border: 1px solid var(--border); padding: 8px; color: var(--text); border-radius: 4px; }
+    .btn { padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+    .btn.primary { background: var(--accent); color: var(--bg); }
+    .cred-actions { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .date-badge { font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+    .icon-tiny { font-size: 14px; }
+    .btn-text { background: none; border: none; cursor: pointer; font-size: 12px; padding: 0; }
+    .btn-text.danger { color: var(--danger); opacity: 0.7; }
+    .btn-text.danger:hover { opacity: 1; }
+</style>
+{% endblock %}

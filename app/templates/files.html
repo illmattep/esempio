@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}File{% endblock %}
+{% block content %}
+  <section class="panel">
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>File Manager</h1>
+        <button class="icon-btn" onclick="document.getElementById('settings-modal').showModal()">
+            <span class="material-symbols-rounded">settings</span>
+        </button>
+    </div>
+    
+    <div class="toolbar">
+        <form method="post" enctype="multipart/form-data" class="upload-form">
+          <input type="file" name="file" required id="file-upload" hidden onchange="this.form.submit()"/>
+          <label for="file-upload" class="button">
+             <span class="material-symbols-rounded">upload</span> Carica File
+          </label>
+        </form>
+    </div>
+
+    <div class="table-container">
+      {% if files %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th style="width: 100px; text-align: right;">Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for name in files %}
+            <tr>
+              <td>
+                <a href="{{ url_for('download', filename=name) }}" class="file-link">
+                    <span class="material-symbols-rounded icon-sm">description</span> {{ name }}
+                </a>
+              </td>
+              <td class="actions">
+                <a href="{{ url_for('download', filename=name) }}" class="icon-btn" title="Scarica">
+                    <span class="material-symbols-rounded">download</span>
+                </a>
+                <form action="{{ url_for('delete_file_route', filename=name) }}" method="post" style="display:inline;">
+                    <button type="submit" class="icon-btn danger" onclick="return confirm('Eliminare {{ name }}?')">
+                        <span class="material-symbols-rounded">delete</span>
+                    </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="empty-state">
+            <span class="material-symbols-rounded">folder_off</span>
+            <p>Nessun file presente.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+<!-- Settings Modal -->
+<dialog id="settings-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Impostazioni File</h3>
+            <button class="icon-btn" onclick="document.getElementById('settings-modal').close()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <form action="{{ url_for('service_settings', service='files') }}" method="post">
+            <div class="setting-row">
+                <label>Richiedi Password (Admin)</label>
+                <label class="switch">
+                    <input type="checkbox" name="require_password" {% if settings.require_password %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+  <style>
+      .toolbar { margin-bottom: 20px; }
+      .button { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--bg); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+      .data-table { width: 100%; border-collapse: collapse; }
+      .data-table th, .data-table td { padding: 12px; border-bottom: 1px solid var(--border); text-align: left; }
+      .file-link { color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+      .file-link:hover { color: var(--accent); }
+      .actions { display: flex; justify-content: flex-end; gap: 8px; }
+      /* .icon-btn styles moved to global css */
+      .icon-sm { font-size: 18px; }
+      .empty-state { text-align: center; padding: 40px; color: var(--muted); }
+      .empty-state span { font-size: 48px; opacity: 0.5; }
+  </style>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Log Sistema{% endblock %}
+{% block content %}
+<section class="panel" style="height: calc(100vh - 100px); display: flex; flex-direction: column;">
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h1>Log di Sistema</h1>
+        <div style="display: flex; gap: 10px;">
+             <button class="icon-btn" onclick="document.getElementById('settings-modal').showModal()">
+                <span class="material-symbols-rounded">settings</span>
+            </button>
+            <form action="{{ url_for('logs_clear') }}" method="post">
+                <button type="submit" class="btn danger" onclick="return confirm('Cancellare tutti i log?')">
+                    <span class="material-symbols-rounded">delete</span> Pulisci
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="log-viewer">
+        <pre>{{ log_content }}</pre>
+    </div>
+</section>
+
+<!-- Settings Modal -->
+<dialog id="settings-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Impostazioni Log</h3>
+            <button class="icon-btn" onclick="document.getElementById('settings-modal').close()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <form action="{{ url_for('service_settings', service='logs') }}" method="post">
+            <div class="setting-row">
+                <label>Richiedi Password (Admin)</label>
+                <label class="switch">
+                    <input type="checkbox" name="require_password" {% if settings.require_password %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<style>
+    .log-viewer { flex-grow: 1; background: var(--bg_deep); padding: 16px; border-radius: 8px; border: 1px solid var(--border); overflow: auto; font-family: monospace; font-size: 12px; white-space: pre-wrap; color: var(--muted); }
+    .btn.danger { background: var(--flash_error_bg); color: var(--danger); border: 1px solid var(--danger); padding: 6px 12px; border-radius: 4px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+</style>
+{% endblock %}

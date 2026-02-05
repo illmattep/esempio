@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Terminale{% endblock %}
+{% block content %}
+  <section class="panel">
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>Terminale web</h1>
+        <button class="icon-btn" onclick="document.getElementById('settings-modal').showModal()">
+            <span class="material-symbols-rounded">settings</span>
+        </button>
+    </div>
+    {% if terminal_url %}
+      <div class="terminal-frame">
+        <iframe src="{{ terminal_url }}" title="Terminale"></iframe>
+      </div>
+    {% else %}
+      <p>Configura l'URL del terminale (es. TTYD) nelle impostazioni.</p>
+    {% endif %}
+  </section>
+
+<!-- Settings Modal -->
+<dialog id="settings-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Impostazioni Terminale</h3>
+            <button class="icon-btn" onclick="document.getElementById('settings-modal').close()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <form action="{{ url_for('service_settings', service='terminal') }}" method="post">
+            <div class="setting-row">
+                <label>URL Terminale</label>
+                <input type="text" name="terminal_url" value="{{ terminal_url }}" placeholder="http://localhost:7681" style="background: var(--input_bg); border: 1px solid var(--border); padding: 8px; border-radius: 4px; color: var(--text); width: 200px;">
+            </div>
+            <div class="setting-row">
+                <label>Richiedi Password (Admin)</label>
+                <label class="switch">
+                    <input type="checkbox" name="require_password" {% if settings.require_password %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+{% endblock %}

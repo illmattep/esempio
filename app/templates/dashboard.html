@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+  <section class="panel">
+    <h1>Dashboard</h1>
+    <p>Benvenuto nel pannello del server casalingo.</p>
+    <div class="grid">
+      {% for service in services %}
+        <a class="card" href="{{ url_for(service.endpoint) }}">
+          <h2>{{ service.name }}</h2>
+          <p>Apri il servizio.</p>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

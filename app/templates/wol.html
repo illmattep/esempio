@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Wake-on-LAN{% endblock %}
+{% block content %}
+  <section class="panel">
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>Wake-on-LAN</h1>
+        <button class="icon-btn" onclick="document.getElementById('settings-modal').showModal()">
+            <span class="material-symbols-rounded">settings</span>
+        </button>
+    </div>
+    <form method="post" action="{{ url_for('wol_send') }}" class="form">
+      <label>
+        MAC address
+        <input type="text" name="mac" placeholder="AA:BB:CC:DD:EE:FF" required />
+      </label>
+      <label>
+        Host broadcast (opzionale)
+        <input type="text" name="host" placeholder="255.255.255.255" />
+      </label>
+      <button type="submit">Invia pacchetto</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Target salvati</h2>
+    {% if targets %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>MAC</th>
+            <th>Host</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for target in targets %}
+            <tr>
+              <td>{{ target.name }}</td>
+              <td>{{ target.mac }}</td>
+              <td>{{ target.host or '-' }}</td>
+              <td>
+                <form method="post" action="{{ url_for('wol_send') }}" class="inline-form">
+                  <input type="hidden" name="mac" value="{{ target.mac }}" />
+                  <input type="hidden" name="host" value="{{ target.host }}" />
+                  <button type="submit">Accendi</button>
+                </form>
+                <form method="post" action="{{ url_for('wol_delete_target', target_id=target.id) }}" class="inline-form">
+                  <button type="submit" class="ghost">Rimuovi</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>Nessun target salvato.</p>
+    {% endif %}
+
+    <h3>Salva un nuovo target</h3>
+    <form method="post" action="{{ url_for('wol_add_target') }}" class="form">
+      <label>
+        Nome
+        <input type="text" name="name" required />
+      </label>
+      <label>
+        MAC
+        <input type="text" name="mac" required />
+      </label>
+      <label>
+        Host
+        <input type="text" name="host" />
+      </label>
+      <button type="submit">Salva</button>
+    </form>
+  </section>
+
+<!-- Settings Modal -->
+<dialog id="settings-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Impostazioni WOL</h3>
+            <button class="icon-btn" onclick="document.getElementById('settings-modal').close()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <form action="{{ url_for('service_settings', service='wol') }}" method="post">
+            <div class="setting-row">
+                <label>Richiedi Password (Admin)</label>
+                <label class="switch">
+                    <input type="checkbox" name="require_password" {% if settings.require_password %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+{% endblock %}

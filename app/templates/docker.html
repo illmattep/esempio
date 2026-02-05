@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Docker{% endblock %}
+{% block content %}
+  <section class="panel">
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>Gestione Docker</h1>
+        <button class="icon-btn" onclick="document.getElementById('settings-modal').showModal()">
+            <span class="material-symbols-rounded">settings</span>
+        </button>
+    </div>
+    {% if error %}
+      <p class="error-text">{{ error }}</p>
+    {% else %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Stato</th>
+            <th>Azione</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for container in containers %}
+            <tr>
+              <td>{{ container.name }}</td>
+              <td>{{ container.status }}</td>
+              <td>
+                <form method="post" action="{{ url_for('docker_action') }}" class="inline-form">
+                  <input type="hidden" name="container_id" value="{{ container.id }}" />
+                  {% if container.status == 'running' %}
+                    <button type="submit" name="action" value="stop">Stop</button>
+                  {% else %}
+                    <button type="submit" name="action" value="start">Start</button>
+                  {% endif %}
+                  <button type="submit" name="action" value="restart">Restart</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </section>
+
+<!-- Settings Modal -->
+<dialog id="settings-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Impostazioni Docker</h3>
+            <button class="icon-btn" onclick="document.getElementById('settings-modal').close()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <form action="{{ url_for('service_settings', service='docker') }}" method="post">
+            <div class="setting-row">
+                <label>Richiedi Password (Admin)</label>
+                <label class="switch">
+                    <input type="checkbox" name="require_password" {% if settings.require_password %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+{% endblock %}

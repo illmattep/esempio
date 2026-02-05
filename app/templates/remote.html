@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Accesso Remoto{% endblock %}
+{% block content %}
+<section class="panel">
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+         <h1>Accesso Remoto</h1>
+         <button class="icon-btn" onclick="document.getElementById('settings-modal').showModal()">
+            <span class="material-symbols-rounded">settings</span>
+         </button>
+    </div>
+    <p class="muted">Esponi il tuo server su internet in modo sicuro tramite Cloudflare Tunnel.</p>
+
+    <div class="state-card {{ 'active' if tunnel_status == 'running' else 'inactive' }}">
+        <div class="status-indicator">
+            <div class="dot"></div>
+            <span class="status-text">{{ 'ATTIVO' if tunnel_status == 'running' else 'NON ATTIVO' }}</span>
+        </div>
+
+        {% if tunnel_url %}
+        <div class="url-box">
+            <label>URL Pubblico:</label>
+            <a href="{{ tunnel_url }}" target="_blank" class="tunnel-url">{{ tunnel_url }}</a>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('{{ tunnel_url }}')">
+                <span class="material-symbols-rounded icon-sm">content_copy</span>
+            </button>
+        </div>
+        {% endif %}
+
+        <div class="actions">
+            {% if tunnel_status == 'running' %}
+            <form action="{{ url_for('remote_stop') }}" method="post">
+                <button type="submit" class="btn danger">
+                    <span class="material-symbols-rounded">stop_circle</span> Arresta Tunnel
+                </button>
+            </form>
+            {% else %}
+            <form action="{{ url_for('remote_start') }}" method="post">
+                <button type="submit" class="btn primary">
+                    <span class="material-symbols-rounded">rocket_launch</span> Avvia Tunnel
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="logs-box">
+        <h3>Log Tunnel</h3>
+        <pre class="tunnel-log">{{ tunnel_logs or 'Nessun log disponibile...' }}</pre>
+    </div>
+</section>
+
+<!-- Settings Modal -->
+<dialog id="settings-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Impostazioni Remoto</h3>
+            <button class="icon-btn" onclick="document.getElementById('settings-modal').close()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <form action="{{ url_for('service_settings', service='remote') }}" method="post">
+            <div class="setting-row">
+                <label>Richiedi Password (Admin)</label>
+                <label class="switch">
+                    <input type="checkbox" name="require_password" {% if settings.require_password %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<style>
+    .state-card { background: var(--card_bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; }
+    .state-card.active { border-color: var(--success); box-shadow: 0 0 20px rgba(0, 255, 128, 0.1); }
+    
+    .status-indicator { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 10px var(--danger); }
+    .state-card.active .dot { background: var(--success); box-shadow: 0 0 10px var(--success); }
+    
+    .url-box { background: var(--input_bg); border: 1px solid var(--accent); padding: 12px 20px; border-radius: 8px; display: flex; align-items: center; gap: 12px; max-width: 100%; }
+    .url-box label { font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+    .tunnel-url { color: var(--accent); font-family: monospace; font-size: 16px; text-decoration: none; }
+    .tunnel-url:hover { text-decoration: underline; }
+    
+    .copy-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 4px; }
+    .copy-btn:hover { color: var(--text); background: var(--bg); }
+    
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-size: 16px; transition: transform 0.1s; }
+    .btn:active { transform: scale(0.98); }
+    .btn.primary { background: var(--accent); color: var(--bg); }
+    .btn.danger { background: var(--flash_error_bg); color: var(--danger); border: 1px solid var(--danger); }
+    
+    .logs-box { margin-top: 24px; }
+    .logs-box h3 { font-size: 14px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .tunnel-log { background: var(--bg_deep); padding: 16px; border-radius: 8px; height: 200px; overflow-y: auto; text-align: left; font-size: 12px; font-family: monospace; white-space: pre-wrap; color: var(--muted); }
+</style>
+<script>
+    // Auto refresh logs if running
+    {% if tunnel_status == 'running' %}
+    setTimeout(() => {
+        window.location.reload();
+    }, 5000);
+    {% endif %}
+</script>
+{% endblock %}

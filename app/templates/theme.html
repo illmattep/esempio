@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Tema{% endblock %}
+{% block content %}
+  <section class="panel">
+    <h1>Preset tema</h1>
+    <p class="muted">Scegli un preset o crea la tua palette personalizzata.</p>
+    <div class="theme-grid">
+      {% for preset in presets %}
+        <div class="theme-card {% if preset.name == active %}active{% endif %}">
+          <div class="theme-title">{{ preset.name }}</div>
+          <div class="swatches">
+            <span class="swatch" style="background: {{ preset.colors.bg }}"></span>
+            <span class="swatch" style="background: {{ preset.colors.panel }}"></span>
+            <span class="swatch" style="background: {{ preset.colors.accent }}"></span>
+            <span class="swatch" style="background: {{ preset.colors.accent_soft }}"></span>
+            <span class="swatch" style="background: {{ preset.colors.accent_strong }}"></span>
+          </div>
+          <form method="post" action="{{ url_for('theme_apply') }}">
+            <input type="hidden" name="name" value="{{ preset.name }}" />
+            <button type="submit">Applica</button>
+          </form>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Crea un nuovo preset</h2>
+    <form method="post" action="{{ url_for('theme_create') }}" class="theme-form">
+      <label>
+        Nome preset
+        <input type="text" name="name" placeholder="Cyber Mist" required />
+      </label>
+      <div class="row">
+        {% for field in fields %}
+          <label>
+            {{ field }}
+            <input type="text" name="{{ field }}" placeholder="{% if field in rgba_fields %}rgba(96, 247, 198, 0.35){% else %}#aabbcc{% endif %}" required />
+          </label>
+        {% endfor %}
+      </div>
+      <button type="submit">Salva preset</button>
+    </form>
+  </section>
+{% endblock %}

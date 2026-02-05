@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Home Server{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@400;600" />
+    <style>
+      :root { {{ theme_vars }} }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/auto-animate/0.9.0/index.min.js" integrity="sha512-1Ah72anNLA1VacXPtmwQtOiu4tEgrerzl5gKVPknpsRmkcywngQU0cE2CPee03TfmiOgBt14WqlIK61jQ/Ajlw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+            <span class="material-symbols-rounded brand-icon">dns</span>
+            <div class="brand-text">
+                Home Server <span class="brand-sub">{{ theme_name }}</span>
+            </div>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-title">Menu</div>
+          <nav class="sidebar-nav">
+            <a href="{{ url_for('dashboard') }}"><span class="material-symbols-rounded nav-icon">space_dashboard</span><span class="nav-text">Dashboard</span></a>
+            <a href="{{ url_for('files') }}"><span class="material-symbols-rounded nav-icon">folder_open</span><span class="nav-text">File</span></a>
+            <a href="{{ url_for('monitor') }}"><span class="material-symbols-rounded nav-icon">monitoring</span><span class="nav-text">Monitor</span></a>
+            <a href="{{ url_for('power') }}"><span class="material-symbols-rounded nav-icon">battery_charging_full</span><span class="nav-text">Batteria</span></a>
+            <a href="{{ url_for('docker_view') }}"><span class="material-symbols-rounded nav-icon">inventory_2</span><span class="nav-text">Docker</span></a>
+            <a href="{{ url_for('auth_manager') }}"><span class="material-symbols-rounded nav-icon">password</span><span class="nav-text">Credenziali</span></a>
+            <a href="{{ url_for('tools_view') }}"><span class="material-symbols-rounded nav-icon">construction</span><span class="nav-text">Strumenti</span></a>
+            <a href="{{ url_for('terminal') }}"><span class="material-symbols-rounded nav-icon">terminal</span><span class="nav-text">Terminale</span></a>
+            <a href="{{ url_for('logs_view') }}"><span class="material-symbols-rounded nav-icon">text_snippet</span><span class="nav-text">Log</span></a>
+            <a href="{{ url_for('remote_view') }}"><span class="material-symbols-rounded nav-icon">public</span><span class="nav-text">Remoto</span></a>
+            <a href="{{ url_for('wol') }}"><span class="material-symbols-rounded nav-icon">bolt</span><span class="nav-text">WoL</span></a>
+            <a href="{{ url_for('theme') }}"><span class="material-symbols-rounded nav-icon">palette</span><span class="nav-text">Tema</span></a>
+          </nav>
+        </div>
+        <div class="sidebar-footer">
+            <a href="{{ url_for('logout') }}"><span class="material-symbols-rounded nav-icon">logout</span><span class="nav-text">Logout</span></a>
+        </div>
+      </aside>
+      <div class="main">
+        <header class="topbar">
+          <div>
+            <div class="topbar-title">Control Panel</div>
+            <div class="topbar-sub">Unixporn inspired UI</div>
+          </div>
+          <div class="topbar-right">
+            <span class="chip">/srv/home</span>
+            <span class="chip">v0.1</span>
+          </div>
+        </header>
+        <main class="content">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <div class="flash">
+                {% for category, message in messages %}
+                  <div class="flash-item {{ category }}">{{ message }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endwith %}
+          {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

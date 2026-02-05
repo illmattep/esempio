@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}IT Tools{% endblock %}
+{% block content %}
+<div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>IT Tools</h1>
+    <button class="icon-btn" onclick="document.getElementById('settings-modal').showModal()">
+        <span class="material-symbols-rounded">settings</span>
+    </button>
+</div>
+<div class="tools-container">
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('base64', event)">Base64 Converter</button>
+        <button class="tab" onclick="showTab('hash', event)">Hash Generator</button>
+        <button class="tab" onclick="showTab('json', event)">JSON Formatter</button>
+        <button class="tab" onclick="showTab('uuid', event)">UUID Gen</button>
+    </div>
+
+    <!-- Base64 -->
+    <div id="base64" class="tab-content active panel">
+        <h2>Base64 Converter</h2>
+        <div class="split">
+            <div class="col">
+                <label>Input</label>
+                <textarea id="b64-input" placeholder="Text to encode/decode..."></textarea>
+            </div>
+            <div class="actions-col">
+                <button class="btn" onclick="b64encode()">Encode &rarr;</button>
+                <button class="btn" onclick="b64decode()">&larr; Decode</button>
+            </div>
+            <div class="col">
+                <label>Output</label>
+                <textarea id="b64-output" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hash -->
+    <div id="hash" class="tab-content panel">
+        <h2>Hash Generator</h2>
+        <input type="text" id="hash-input" placeholder="Text to hash..." oninput="updateHash()">
+        <div class="hashes">
+            <div class="hash-row">
+                <label>MD5</label>
+                <input type="text" id="md5-out" readonly>
+            </div>
+            <div class="hash-row">
+                <label>SHA-1</label>
+                <input type="text" id="sha1-out" readonly>
+            </div>
+            <div class="hash-row">
+                <label>SHA-256</label>
+                <input type="text" id="sha256-out" readonly>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JSON -->
+    <div id="json" class="tab-content panel">
+        <h2>JSON Formatter</h2>
+         <div class="split">
+            <div class="col">
+                <textarea id="json-input" placeholder="Paste messy JSON here..."></textarea>
+                <button class="btn" onclick="formatJSON()" style="margin-top: 10px;">Prettify</button>
+            </div>
+            <div class="col">
+                <textarea id="json-output" readonly placeholder="Pretty JSON here..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- UUID -->
+    <div id="uuid" class="tab-content panel">
+        <h2>UUID Generator</h2>
+        <div class="uuid-box">
+            <div id="uuid-display">Click Generate</div>
+            <button class="btn primary" onclick="genUUID()">Generate New UUID v4</button>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<dialog id="settings-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Impostazioni Tools</h3>
+            <button class="icon-btn" onclick="document.getElementById('settings-modal').close()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <form action="{{ url_for('service_settings', service='tools') }}" method="post">
+            <div class="setting-row">
+                <label>Richiedi Password (Admin)</label>
+                <label class="switch">
+                    <input type="checkbox" name="require_password" {% if settings.require_password %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script>
+    function showTab(id, event) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // Base64
+    function b64encode() {
+        try {
+            document.getElementById('b64-output').value = btoa(document.getElementById('b64-input').value);
+        } catch(e) { document.getElementById('b64-output').value = "Error: " + e.message; }
+    }
+    function b64decode() {
+        try {
+            document.getElementById('b64-input').value = atob(document.getElementById('b64-output').value);
+        } catch(e) { document.getElementById('b64-input').value = "Error: " + e.message; }
+    }
+
+    // Hash
+    function updateHash() {
+        const val = document.getElementById('hash-input').value;
+        if(window.CryptoJS) {
+            document.getElementById('md5-out').value = CryptoJS.MD5(val);
+            document.getElementById('sha1-out').value = CryptoJS.SHA1(val);
+            document.getElementById('sha256-out').value = CryptoJS.SHA256(val);
+        }
+    }
+
+    // JSON
+    function formatJSON() {
+        try {
+            const obj = JSON.parse(document.getElementById('json-input').value);
+            document.getElementById('json-output').value = JSON.stringify(obj, null, 2);
+        } catch(e) {
+             document.getElementById('json-output').value = "Invalid JSON";
+        }
+    }
+
+    // UUID
+    function genUUID() {
+        document.getElementById('uuid-display').innerText = crypto.randomUUID();
+    }
+</script>
+
+<style>
+    .tools-container { display: flex; flex-direction: column; gap: 20px; }
+    .tabs { display: flex; gap: 10px; }
+    .tab { background: var(--panel_bg); border: 1px solid var(--border); color: var(--muted); padding: 10px 20px; cursor: pointer; border-radius: 8px; }
+    .tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    .split { display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; }
+    .col { display: flex; flex-direction: column; gap: 8px; }
+    textarea { height: 300px; background: var(--input_bg); color: var(--text); border: 1px solid var(--border); padding: 10px; border-radius: 4px; font-family: monospace; resize: vertical; }
+    .actions-col { display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+    
+    .hash-row { display: grid; grid-template-columns: 80px 1fr; gap: 10px; margin-bottom: 10px; align-items: center; }
+    input[type="text"] { background: var(--input_bg); border: 1px solid var(--border); color: var(--text); padding: 8px; width: 100%; border-radius: 4px; }
+    
+    .uuid-box { text-align: center; padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+    #uuid-display { font-size: 32px; font-family: monospace; color: var(--accent); }
+    .btn { background: var(--card_bg); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+    .btn:hover { background: var(--panel_bg); border-color: var(--accent); }
+    .btn.primary { background: var(--accent); color: var(--bg); border: none; font-weight: 600; }
+</style>
+{% endblock %}

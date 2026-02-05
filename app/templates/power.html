@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Batteria{% endblock %}
+{% block content %}
+  <section class="panel">
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>Stato batteria</h1>
+        <button class="icon-btn" onclick="document.getElementById('settings-modal').showModal()">
+            <span class="material-symbols-rounded">settings</span>
+        </button>
+    </div>
+    {% if battery %}
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">Carica</div>
+          <div class="metric-value">{{ battery.percent | round(0) }}%</div>
+          <div class="meter"><span style="width: {{ battery.percent | round(0) }}%"></span></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Alimentazione</div>
+          <div class="metric-value">
+            {% if battery.power_plugged %}
+              Collegata alla corrente
+            {% else %}
+              A batteria
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <p>Nessuna informazione batteria disponibile.</p>
+    {% endif %}
+  </section>
+
+<!-- Settings Modal -->
+<dialog id="settings-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Impostazioni Power</h3>
+            <button class="icon-btn" onclick="document.getElementById('settings-modal').close()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <form action="{{ url_for('service_settings', service='power') }}" method="post">
+            <div class="setting-row">
+                <label>Richiedi Password (Admin)</label>
+                <label class="switch">
+                    <input type="checkbox" name="require_password" {% if settings.require_password %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+{% endblock %}

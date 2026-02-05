@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Monitoraggio{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Monitoraggio Risorse</h1>
+    <button class="icon-btn" onclick="document.getElementById('settings-modal').showModal()">
+        <span class="material-symbols-rounded">settings</span>
+    </button>
+  </div>
+  
+  <div class="metrics-grid">
+    <div class="card metric-card">
+        <div class="metric-title"><span class="material-symbols-rounded">memory</span> CPU</div>
+        <div class="metric-value"><span id="cpu">0</span>%</div>
+        <div class="meter"><div class="meter-bar" id="cpu-bar" style="width: 0%"></div></div>
+    </div>
+    <div class="card metric-card">
+        <div class="metric-title"><span class="material-symbols-rounded">memory_alt</span> RAM</div>
+        <div class="metric-value"><span id="ram">0</span>%</div>
+        <div class="meter"><div class="meter-bar" id="ram-bar" style="width: 0%"></div></div>
+        <div class="metric-sub" id="ram-text">0/0 GB</div>
+    </div>
+    <div class="card metric-card">
+        <div class="metric-title"><span class="material-symbols-rounded">hard_drive</span> Disco</div>
+        <div class="metric-value"><span id="disk">0</span>%</div>
+        <div class="meter"><div class="meter-bar" id="disk-bar" style="width: 0%"></div></div>
+        <div class="metric-sub" id="disk-text">0/0 GB</div>
+    </div>
+    <div class="card metric-card">
+        <div class="metric-title"><span class="material-symbols-rounded">device_thermostat</span> Temp</div>
+        <div class="metric-value"><span id="temp">0</span>°C</div>
+        <div class="metric-sub">Media Sensori</div>
+    </div>
+  </div>
+</section>
+
+<!-- Settings Modal -->
+<dialog id="settings-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Impostazioni Monitor</h3>
+            <button class="icon-btn" onclick="document.getElementById('settings-modal').close()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <form action="{{ url_for('service_settings', service='monitor') }}" method="post">
+            <div class="setting-row">
+                <label>Richiedi Password (Admin)</label>
+                <label class="switch">
+                    <input type="checkbox" name="require_password" {% if settings.require_password %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<script>
+    function fetchMetrics() {
+        fetch('/api/monitor')
+        .then(r => r.json())
+        .then(d => {
+            if (d.error) {
+                console.error("Monitor API Error:", d.error);
+                return;
+            }
+            
+            if (d.cpu_percent !== undefined) {
+                document.getElementById('cpu').innerText = d.cpu_percent;
+                document.getElementById('cpu-bar').style.width = d.cpu_percent + '%';
+            }
+            
+            if (d.mem_percent !== undefined) {
+                document.getElementById('ram').innerText = d.mem_percent;
+                document.getElementById('ram-bar').style.width = d.mem_percent + '%';
+                document.getElementById('ram-text').innerText = (d.mem_used / 1e9).toFixed(1) + ' / ' + (d.mem_total / 1e9).toFixed(1) + ' GB';
+            }
+            
+            if (d.disk_percent !== undefined) {
+                document.getElementById('disk').innerText = d.disk_percent;
+                document.getElementById('disk-bar').style.width = d.disk_percent + '%';
+                document.getElementById('disk-text').innerText = (d.disk_used / 1e9).toFixed(1) + ' / ' + (d.disk_total / 1e9).toFixed(1) + ' GB';
+            }
+
+            if (d.temps && d.temps.length > 0) {
+                 const avg = d.temps.reduce((a, b) => a + b, 0) / d.temps.length;
+                 document.getElementById('temp').innerText = avg.toFixed(1);
+            }
+        })
+        .catch(err => console.error("Fetch error:", err));
+    }
+    setInterval(fetchMetrics, 2000);
+    fetchMetrics();
+</script>
+
+<style>
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .metric-card { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .metric-title { font-size: 14px; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .metric-value { font-size: 32px; font-weight: 700; color: var(--accent); }
+    .metric-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .meter { height: 6px; background: var(--meter_bg); border-radius: 3px; overflow: hidden; }
+    .meter-bar { height: 100%; background: var(--accent); transition: width 0.5s ease; box-shadow: 0 0 10px var(--accent); }
+</style>
+{% endblock %}
